@@ -18,8 +18,10 @@ function doPost(e) {
                      `<td style="padding:6px 10px;border:1px solid #ddd">${esc(v) || "—"}</td></tr>`)
     .join("");
 
+  const veli = al("E-posta").trim();
   MailApp.sendEmail({
     to: ALICI,
+    replyTo: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(veli) ? veli : ALICI, // "Yanıtla" doğrudan veliye gitsin
     subject: al("_subject") || "Veli İlk Görüşme Formu",
     htmlBody: `<table style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px">${satirlar}</table>`,
   });
