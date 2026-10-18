@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veli İlk Görüşme Formu</title>
+<style>
+  :root { --bg:#f5f6f8; --card:#fff; --text:#1f2933; --muted:#6b7280; --line:#e2e5ea; --accent:#c8102e; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width:720px; margin:0 auto; padding:24px 16px 48px; }
+  header h1 { margin:0 0 20px; font-size:1.5rem; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px; }
+  section h2 { margin:0 0 16px; font-size:1.05rem; color:var(--accent); }
+  .field { margin-bottom:18px; }
+  .field:last-child { margin-bottom:0; }
+  label, legend { display:block; font-weight:600; margin-bottom:6px; }
+  fieldset { border:0; padding:0; margin:0; }
+  input[type=text], input[type=date], select, textarea {
+    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px; font:inherit; background:#fff; color:inherit;
+  }
+  input:focus, select:focus, textarea:focus { outline:2px solid var(--accent); outline-offset:1px; border-color:transparent; }
+  textarea { min-height:90px; resize:vertical; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:0 16px; }
+  @media (max-width:560px) { .grid { grid-template-columns:1fr; } }
+  .yn { display:flex; gap:20px; }
+  .yn label { font-weight:400; display:flex; align-items:center; gap:6px; margin:0; cursor:pointer; }
+  .detail { margin-top:10px; }
+  .detail[hidden] { display:none; }
+  .req { color:var(--accent); }
+  button { width:100%; padding:14px; border:0; border-radius:10px; background:var(--accent); color:#fff; font:inherit; font-weight:600; cursor:pointer; }
+  button:hover { filter:brightness(.92); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Veli İlk Görüşme Formu</h1>
+  </header>
+
+  <form id="form" action="https://formsubmit.co/mozbey@oguzkaan.k12.tr" method="POST">
+    <input type="hidden" name="_subject" id="subject" value="Veli İlk Görüşme Formu">
+    <input type="hidden" name="_template" value="table">
+    <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+
+    <section>
+      <h2>Genel Bilgiler</h2>
+      <div class="grid">
+        <div class="field"><label for="ogrenci">Öğrencinin Adı Soyadı <span class="req">*</span></label>
+          <input type="text" id="ogrenci" name="Öğrencinin Adı Soyadı" required></div>
+        <div class="field"><label for="sinif">Sınıfı <span class="req">*</span></label>
+          <input type="text" id="sinif" name="Sınıfı" placeholder="Örn. 5A" required></div>
+        <div class="field"><label for="gelen">Formu Dolduran <span class="req">*</span></label>
+          <select id="gelen" name="Formu Dolduran" required>
+            <option value="">Seçiniz</option><option>Anne</option><option>Baba</option><option>Diğer</option>
+          </select></div>
+        <div class="field"><label for="ad">Adı Soyadı <span class="req">*</span></label>
+          <input type="text" id="ad" name="Dolduranın Adı Soyadı" required></div>
+        <div class="field"><label for="meslek">Mesleği</label>
+          <input type="text" id="meslek" name="Mesleği"></div>
+        <div class="field"><label for="yakinlik">Yakınlık Durumu</label>
+          <input type="text" id="yakinlik" name="Yakınlık Durumu"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Görüşme Soruları</h2>
+      <div id="questions"></div>
+    </section>
+
+    <section>
+      <h2>Eklemek İstedikleriniz</h2>
+      <div class="field"><label for="not">Eklemek istediğiniz başka bir şey var mı?</label>
+        <textarea id="not" name="Eklemek İstedikleriniz"></textarea></div>
+    </section>
+
+    <button type="submit">Gönder</button>
+  </form>
+</main>
+
+<script>
+// [soru] = açık uçlu; [soru, detay] = Evet/Hayır, "Evet" seçilince detay alanı zorunlu açılır; [soru, null] = sadece Evet/Hayır
+const Q = [
+  ["Oğuzkaan’a kayıt olmadan önce hangi okuldaydı?"],
+  ["Daha önceki okulunda yaşadığı olumlu ya da olumsuz önemli bir olay varsa paylaşır mısınız?"],
+  ["Daha önceki okulunda öğretmeni ve arkadaşları ile ilişkisi nasıldı?"],
+  ["Okul değişikliği yaşadı mı? Evet ise sebebiyle açıklar mısınız?"],
+  ["Türkçe dersi ile ilgili akademik ya da duygusal bir sorun yaşadı mı? Evet ise paylaşır mısınız?"],
+  ["Matematik dersi ile ilgili akademik ya da duygusal bir sorun yaşadı mı? Evet ise paylaşır mısınız?"],
+  ["Düzenli ders çalışır mı?", null],
+  ["Evde, ders çalışabileceği kendisine ait özel bir alanı var mı?", null],
+  ["Kitap okuma alışkanlığı var mı?", "Ayda kaç kitap okur?"],
+  ["Akademik yönden kaygıları var mı?", "Hangi ders(ler)e yönelik kaygı yaşıyor?"],
+  ["Daha önce pedagoga gitti mi?", "Okul olarak bilmemiz gerekenleri paylaşır mısınız?"],
+  ["Ergenlik sürecini sizce nasıl geçiriyor?"],
+  ["Çocuğunuzu nasıl tarif edersiniz? (Hareketli, sakin, öfkeli vb.)"],
+  ["Geçirdiği önemli bir rahatsızlık var mı?", "Ayrıntı paylaşır mısınız?"],
+  ["Geçirdiği bir operasyon var mı?", "Ayrıntı paylaşır mısınız?"],
+  ["Herhangi bir alerjisi var mı?", "Ayrıntı paylaşır mısınız?"],
+  ["Devamlı kullanması gereken bir ilaç var mı?", "Ayrıntı paylaşır mısınız?"],
+  ["Ebeveynleriyle ilişkileri nasıldır?"],
+  ["Kardeşi varsa ilişkileri nasıldır?"],
+  ["Evde beraber yaşayan başka aile üyeleri varsa ilişkileri nasıldır?"],
+  ["Akranları ile kurduğu ilişkileri nasıl değerlendirirsiniz?"],
+  ["İhtiyaç hissettiği konularda yetişkinlerden destek ister mi?", null],
+  ["Telefon / Tablet / PC kullanıyor mu?", "Ne sıklıkla kullanıyor?"],
+  ["Yapmaktan hoşlandığı aktiviteler nelerdir?"],
+  ["İlgilendiği spor dalları nelerdir?"],
+  ["Herhangi bir müzik aleti çalıyor mu?", "Hangi enstrüman(lar)ı çalıyor?"],
+  ["Mesleki hedefleri nelerdir?"],
+  ["Sizce en çok hangi konuda gelişmesi önemlidir?"],
+  ["Özellikle üzerinde durulmasını istediğiniz konular nelerdir?"],
+];
+
+const box = document.getElementById("questions");
+Q.forEach(([q, detail], i) => {
+  const n = i + 1, name = `${n}. ${q}`, div = document.createElement("div");
+  div.className = "field";
+  if (detail === undefined) {
+    div.innerHTML = `<label for="q${n}">${name}</label><textarea id="q${n}" rows="2"></textarea>`;
+    div.querySelector("textarea").name = name;
+  } else {
+    div.innerHTML = `<fieldset><legend>${name} <span class="req">*</span></legend>
+      <div class="yn"><label><input type="radio" value="Evet" required> Evet</label>
+      <label><input type="radio" value="Hayır"> Hayır</label></div></fieldset>`;
+    div.querySelectorAll("input").forEach(r => r.name = name);
+    if (detail) {
+      const d = document.createElement("div");
+      d.className = "detail"; d.hidden = true;
+      d.innerHTML = `<label for="d${n}">${detail} <span class="req">*</span></label><input type="text" id="d${n}" disabled>`;
+      const inp = d.querySelector("input");
+      inp.name = `${n}. ${detail}`;
+      div.querySelector("fieldset").appendChild(d);
+      div.addEventListener("change", e => {
+        const yes = e.target.value === "Evet" && e.target.type === "radio";
+        if (e.target.type !== "radio") return;
+        d.hidden = !yes; inp.disabled = !yes; inp.required = yes; // disabled alanlar maile gitmez
+      });
+    }
+  }
+  box.appendChild(div);
+});
+
+document.getElementById("form").addEventListener("submit", () => {
+  const s = [document.getElementById("ogrenci").value, document.getElementById("sinif").value].filter(Boolean).join(" - ");
+  document.getElementById("subject").value = `Veli İlk Görüşme Formu: ${s}`;
+});
+</script>
+</body>
+</html>
